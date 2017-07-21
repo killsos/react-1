@@ -1,8 +1,6 @@
 var ReactCurrentOwner = require('ReactCurrentOwner');
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
-
-
 // The Symbol used to tag the ReactElement type. If there is no native Symbol
 // nor polyfill, then a plain number is used for performance.
 var REACT_ELEMENT_TYPE =
