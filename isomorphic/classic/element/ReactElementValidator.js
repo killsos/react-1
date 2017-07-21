@@ -1,63 +1,13 @@
 /**
- * Copyright 2014-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @providesModule ReactElementValidator
- */
-
-/**
  * ReactElementValidator provides a wrapper around a element factory
  * which validates the props passed to the element. This is intended to be
  * used only in DEV and could be replaced by a static type checker for languages
  * that support it.
  */
 
-'use strict';
 
 var ReactCurrentOwner = require('ReactCurrentOwner');
 var ReactElement = require('ReactElement');
-
-if (__DEV__) {
-  var checkPropTypes = require('prop-types/checkPropTypes');
-  var lowPriorityWarning = require('lowPriorityWarning');
-  var ReactDebugCurrentFrame = require('ReactDebugCurrentFrame');
-  var warning = require('fbjs/lib/warning');
-  var describeComponentFrame = require('describeComponentFrame');
-  var getComponentName = require('getComponentName');
-
-  var currentlyValidatingElement = null;
-
-  var getDisplayName = function(element: ?ReactElement): string {
-    if (element == null) {
-      return '#empty';
-    } else if (typeof element === 'string' || typeof element === 'number') {
-      return '#text';
-    } else if (typeof element.type === 'string') {
-      return element.type;
-    } else {
-      return element.type.displayName || element.type.name || 'Unknown';
-    }
-  };
-
-  var getStackAddendum = function(): string {
-    var stack = '';
-    if (currentlyValidatingElement) {
-      var name = getDisplayName(currentlyValidatingElement);
-      var owner = currentlyValidatingElement._owner;
-      stack += describeComponentFrame(
-        name,
-        currentlyValidatingElement._source,
-        owner && getComponentName(owner),
-      );
-    }
-    stack += ReactDebugCurrentFrame.getStackAddendum() || '';
-    return stack;
-  };
-}
 
 var ITERATOR_SYMBOL = typeof Symbol === 'function' && Symbol.iterator;
 var FAUX_ITERATOR_SYMBOL = '@@iterator'; // Before Symbol spec.
@@ -144,14 +94,7 @@ function validateExplicitKey(element, parentType) {
   }
 
   currentlyValidatingElement = element;
-  warning(
-    false,
-    'Each child in an array or iterator should have a unique "key" prop.' +
-      '%s%s See https://fb.me/react-warning-keys for more information.%s',
-    currentComponentErrorInfo,
-    childOwner,
-    getStackAddendum(),
-  );
+ 
   currentlyValidatingElement = null;
 }
 
@@ -227,13 +170,7 @@ function validatePropTypes(element) {
     checkPropTypes(propTypes, element.props, 'prop', name, getStackAddendum);
     currentlyValidatingElement = null;
   }
-  if (typeof componentClass.getDefaultProps === 'function') {
-    warning(
-      componentClass.getDefaultProps.isReactClassApproved,
-      'getDefaultProps is only used on classic React.createClass ' +
-        'definitions. Use a static property named `defaultProps` instead.',
-    );
-  }
+  
 }
 
 var ReactElementValidator = {
@@ -301,24 +238,6 @@ var ReactElementValidator = {
     var validatedFactory = ReactElementValidator.createElement.bind(null, type);
     // Legacy hook TODO: Warn if this is accessed
     validatedFactory.type = type;
-
-    if (__DEV__) {
-      Object.defineProperty(validatedFactory, 'type', {
-        enumerable: false,
-        get: function() {
-          lowPriorityWarning(
-            false,
-            'Factory.type is deprecated. Access the class directly ' +
-              'before passing it to createFactory.',
-          );
-          Object.defineProperty(this, 'type', {
-            value: type,
-          });
-          return type;
-        },
-      });
-    }
-
     return validatedFactory;
   },
 
