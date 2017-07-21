@@ -1,22 +1,7 @@
-/**
- * Copyright 2014-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @providesModule ReactElement
- */
-
-'use strict';
-
 var ReactCurrentOwner = require('ReactCurrentOwner');
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
-if (__DEV__) {
-  var warning = require('fbjs/lib/warning');
-}
+
 
 // The Symbol used to tag the ReactElement type. If there is no native Symbol
 // nor polyfill, then a plain number is used for performance.
@@ -34,26 +19,10 @@ var RESERVED_PROPS = {
 var specialPropKeyWarningShown, specialPropRefWarningShown;
 
 function hasValidRef(config) {
-  if (__DEV__) {
-    if (hasOwnProperty.call(config, 'ref')) {
-      var getter = Object.getOwnPropertyDescriptor(config, 'ref').get;
-      if (getter && getter.isReactWarning) {
-        return false;
-      }
-    }
-  }
   return config.ref !== undefined;
 }
 
 function hasValidKey(config) {
-  if (__DEV__) {
-    if (hasOwnProperty.call(config, 'key')) {
-      var getter = Object.getOwnPropertyDescriptor(config, 'key').get;
-      if (getter && getter.isReactWarning) {
-        return false;
-      }
-    }
-  }
   return config.key !== undefined;
 }
 
@@ -61,14 +30,6 @@ function defineKeyPropWarningGetter(props, displayName) {
   var warnAboutAccessingKey = function() {
     if (!specialPropKeyWarningShown) {
       specialPropKeyWarningShown = true;
-      warning(
-        false,
-        '%s: `key` is not a prop. Trying to access it will result ' +
-          'in `undefined` being returned. If you need to access the same ' +
-          'value within the child component, you should pass it as a different ' +
-          'prop. (https://fb.me/react-special-props)',
-        displayName,
-      );
     }
   };
   warnAboutAccessingKey.isReactWarning = true;
@@ -82,14 +43,6 @@ function defineRefPropWarningGetter(props, displayName) {
   var warnAboutAccessingRef = function() {
     if (!specialPropRefWarningShown) {
       specialPropRefWarningShown = true;
-      warning(
-        false,
-        '%s: `ref` is not a prop. Trying to access it will result ' +
-          'in `undefined` being returned. If you need to access the same ' +
-          'value within the child component, you should pass it as a different ' +
-          'prop. (https://fb.me/react-special-props)',
-        displayName,
-      );
     }
   };
   warnAboutAccessingRef.isReactWarning = true;
@@ -104,20 +57,6 @@ function defineRefPropWarningGetter(props, displayName) {
  * the class pattern, so do not use new to call it. Also, no instanceof check
  * will work. Instead test $$typeof field against Symbol.for('react.element') to check
  * if something is a React Element.
- *
- * @param {*} type
- * @param {*} key
- * @param {string|object} ref
- * @param {*} self A *temporary* helper to detect places where `this` is
- * different from the `owner` when React.createElement is called, so that we
- * can warn. We want to get rid of owner and replace string `ref`s with arrow
- * functions, and as long as `this` and owner are the same, there will be no
- * change in behavior.
- * @param {*} source An annotation object (added by a transpiler or otherwise)
- * indicating filename, line number, and/or other information.
- * @param {*} owner
- * @param {*} props
- * @internal
  */
 var ReactElement = function(type, key, ref, self, source, owner, props) {
   var element = {
@@ -134,50 +73,11 @@ var ReactElement = function(type, key, ref, self, source, owner, props) {
     _owner: owner,
   };
 
-  if (__DEV__) {
-    // The validation flag is currently mutative. We put it on
-    // an external backing store so that we can freeze the whole object.
-    // This can be replaced with a WeakMap once they are implemented in
-    // commonly used development environments.
-    element._store = {};
-
-    // To make comparing ReactElements easier for testing purposes, we make
-    // the validation flag non-enumerable (where possible, which should
-    // include every environment we run tests in), so the test framework
-    // ignores it.
-    Object.defineProperty(element._store, 'validated', {
-      configurable: false,
-      enumerable: false,
-      writable: true,
-      value: false,
-    });
-    // self and source are DEV only properties.
-    Object.defineProperty(element, '_self', {
-      configurable: false,
-      enumerable: false,
-      writable: false,
-      value: self,
-    });
-    // Two elements created in two different places should be considered
-    // equal for testing purposes and therefore we hide it from enumeration.
-    Object.defineProperty(element, '_source', {
-      configurable: false,
-      enumerable: false,
-      writable: false,
-      value: source,
-    });
-    if (Object.freeze) {
-      Object.freeze(element.props);
-      Object.freeze(element);
-    }
-  }
-
   return element;
 };
 
 /**
  * Create and return a new ReactElement of the given type.
- * See https://facebook.github.io/react/docs/react-api.html#createelement
  */
 ReactElement.createElement = function(type, config, children) {
   var propName;
@@ -219,12 +119,7 @@ ReactElement.createElement = function(type, config, children) {
   } else if (childrenLength > 1) {
     var childArray = Array(childrenLength);
     for (var i = 0; i < childrenLength; i++) {
-      childArray[i] = arguments[i + 2];
-    }
-    if (__DEV__) {
-      if (Object.freeze) {
-        Object.freeze(childArray);
-      }
+        childArray[i] = arguments[i + 2];
     }
     props.children = childArray;
   }
@@ -235,24 +130,6 @@ ReactElement.createElement = function(type, config, children) {
     for (propName in defaultProps) {
       if (props[propName] === undefined) {
         props[propName] = defaultProps[propName];
-      }
-    }
-  }
-  if (__DEV__) {
-    if (key || ref) {
-      if (
-        typeof props.$$typeof === 'undefined' ||
-        props.$$typeof !== REACT_ELEMENT_TYPE
-      ) {
-        var displayName = typeof type === 'function'
-          ? type.displayName || type.name || 'Unknown'
-          : type;
-        if (key) {
-          defineKeyPropWarningGetter(props, displayName);
-        }
-        if (ref) {
-          defineRefPropWarningGetter(props, displayName);
-        }
       }
     }
   }
@@ -269,7 +146,6 @@ ReactElement.createElement = function(type, config, children) {
 
 /**
  * Return a function that produces ReactElements of a given type.
- * See https://facebook.github.io/react/docs/react-api.html#createfactory
  */
 ReactElement.createFactory = function(type) {
   var factory = ReactElement.createElement.bind(null, type);
@@ -298,7 +174,6 @@ ReactElement.cloneAndReplaceKey = function(oldElement, newKey) {
 
 /**
  * Clone and return a new ReactElement using element as the starting point.
- * See https://facebook.github.io/react/docs/react-api.html#cloneelement
  */
 ReactElement.cloneElement = function(element, config, children) {
   var propName;
@@ -367,10 +242,6 @@ ReactElement.cloneElement = function(element, config, children) {
 
 /**
  * Verifies the object is a ReactElement.
- * See https://facebook.github.io/react/docs/react-api.html#isvalidelement
- * @param {?object} object
- * @return {boolean} True if `object` is a valid component.
- * @final
  */
 ReactElement.isValidElement = function(object) {
   return (
