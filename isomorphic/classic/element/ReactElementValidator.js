@@ -5,7 +5,6 @@
  * that support it.
  */
 
-
 var ReactCurrentOwner = require('ReactCurrentOwner');
 var ReactElement = require('ReactElement');
 
@@ -199,15 +198,6 @@ var ReactElementValidator = {
       }
 
       info += ReactDebugCurrentFrame.getStackAddendum() || '';
-
-      warning(
-        false,
-        'React.createElement: type is invalid -- expected a string (for ' +
-          'built-in components) or a class/function (for composite ' +
-          'components) but got: %s.%s',
-        type == null ? type : typeof type,
-        info,
-      );
     }
 
     var element = ReactElement.createElement.apply(this, arguments);
