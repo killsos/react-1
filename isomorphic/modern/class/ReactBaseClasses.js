@@ -1,20 +1,6 @@
-/**
- * Copyright 2013-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @providesModule ReactBaseClasses
- */
-
-'use strict';
-
 var ReactNoopUpdateQueue = require('ReactNoopUpdateQueue');
-
 var emptyObject = require('fbjs/lib/emptyObject');
-var invariant = require('fbjs/lib/invariant');
+
 var lowPriorityWarning = require('lowPriorityWarning');
 
 /**
@@ -76,52 +62,12 @@ ReactComponent.prototype.setState = function(partialState, callback) {
  *
  * This will not invoke `shouldComponentUpdate`, but it will invoke
  * `componentWillUpdate` and `componentDidUpdate`.
- *
- * @param {?function} callback Called after update is complete.
- * @final
- * @protected
  */
 ReactComponent.prototype.forceUpdate = function(callback) {
   this.updater.enqueueForceUpdate(this, callback, 'forceUpdate');
 };
 
-/**
- * Deprecated APIs. These APIs used to exist on classic React classes but since
- * we would like to deprecate them, we're not going to move them over to this
- * modern base class. Instead, we define a getter that warns if it's accessed.
- */
-if (__DEV__) {
-  var deprecatedAPIs = {
-    isMounted: [
-      'isMounted',
-      'Instead, make sure to clean up subscriptions and pending requests in ' +
-        'componentWillUnmount to prevent memory leaks.',
-    ],
-    replaceState: [
-      'replaceState',
-      'Refactor your code to use setState instead (see ' +
-        'https://github.com/facebook/react/issues/3236).',
-    ],
-  };
-  var defineDeprecationWarning = function(methodName, info) {
-    Object.defineProperty(ReactComponent.prototype, methodName, {
-      get: function() {
-        lowPriorityWarning(
-          false,
-          '%s(...) is deprecated in plain JavaScript React classes. %s',
-          info[0],
-          info[1],
-        );
-        return undefined;
-      },
-    });
-  };
-  for (var fnName in deprecatedAPIs) {
-    if (deprecatedAPIs.hasOwnProperty(fnName)) {
-      defineDeprecationWarning(fnName, deprecatedAPIs[fnName]);
-    }
-  }
-}
+
 
 /**
  * Base class helpers for the updating state of a component.

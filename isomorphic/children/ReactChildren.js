@@ -39,12 +39,7 @@ function escapeUserProvidedKey(text) {
 
 var POOL_SIZE = 10;
 var traverseContextPool = [];
-function getPooledTraverseContext(
-  mapResult,
-  keyPrefix,
-  mapFunction,
-  mapContext,
-) {
+function getPooledTraverseContext(mapResult, keyPrefix, mapFunction, mapContext,) {
   if (traverseContextPool.length) {
     var traverseContext = traverseContextPool.pop();
     traverseContext.result = mapResult;
@@ -75,34 +70,19 @@ function releaseTraverseContext(traverseContext) {
   }
 }
 
-function traverseAllChildrenImpl(
-  children,
-  nameSoFar,
-  callback,
-  traverseContext,
-) {
+function traverseAllChildrenImpl(children, nameSoFar, callback, traverseContext,) {
   var type = typeof children;
 
   if (type === 'undefined' || type === 'boolean') {
     // All of the above are perceived as null.
     children = null;
   }
-
-  if (
-    children === null ||
-    type === 'string' ||
-    type === 'number' ||
     // The following is inlined from ReactElement. This means we can optimize
     // some checks. React Fiber also inlines this logic for similar purposes.
-    (type === 'object' && children.$$typeof === REACT_ELEMENT_TYPE)
-  ) {
-    callback(
-      traverseContext,
-      children,
-      // If it's the only child, treat the name as if it was wrapped in an array
-      // so that it's consistent if the number of children grows.
-      nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar,
-    );
+  if (children === null || type === 'string' || type === 'number' || (type === 'object' && children.$$typeof === REACT_ELEMENT_TYPE)) {
+    // If it's the only child, treat the name as if it was wrapped in an array
+    // so that it's consistent if the number of children grows.
+    callback(traverseContext, children, nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar,);
     return 1;
   }
 
@@ -115,12 +95,7 @@ function traverseAllChildrenImpl(
     for (var i = 0; i < children.length; i++) {
       child = children[i];
       nextName = nextNamePrefix + getComponentKey(child, i);
-      subtreeCount += traverseAllChildrenImpl(
-        child,
-        nextName,
-        callback,
-        traverseContext,
-      );
+      subtreeCount += traverseAllChildrenImpl(child, nextName, callback, traverseContext,);
     }
   } else {
     var iteratorFn =
@@ -133,12 +108,7 @@ function traverseAllChildrenImpl(
       while (!(step = iterator.next()).done) {
         child = step.value;
         nextName = nextNamePrefix + getComponentKey(child, ii++);
-        subtreeCount += traverseAllChildrenImpl(
-          child,
-          nextName,
-          callback,
-          traverseContext,
-        );
+        subtreeCount += traverseAllChildrenImpl(child, nextName, callback, traverseContext,);
       }
     } else if (type === 'object') {
       var addendum = '';
@@ -201,14 +171,10 @@ function forEachChildren(children, forEachFunc, forEachContext) {
   if (children == null) {
     return children;
   }
-  var traverseContext = getPooledTraverseContext(
-    null,
-    null,
-    forEachFunc,
-    forEachContext,
-  );
+  var traverseContext = getPooledTraverseContext(null, null, forEachFunc, forEachContext,);
   traverseAllChildren(children, forEachSingleChild, traverseContext);
   releaseTraverseContext(traverseContext);
+  
 }
 
 function mapSingleChildIntoContext(bookKeeping, child, childKey) {
@@ -216,12 +182,7 @@ function mapSingleChildIntoContext(bookKeeping, child, childKey) {
 
   var mappedChild = func.call(context, child, bookKeeping.count++);
   if (Array.isArray(mappedChild)) {
-    mapIntoWithKeyPrefixInternal(
-      mappedChild,
-      result,
-      childKey,
-      emptyFunction.thatReturnsArgument,
-    );
+    mapIntoWithKeyPrefixInternal(mappedChild, result, childKey, emptyFunction.thatReturnsArgument,);
   } else if (mappedChild != null) {
     if (ReactElement.isValidElement(mappedChild)) {
       mappedChild = ReactElement.cloneAndReplaceKey(
@@ -229,11 +190,7 @@ function mapSingleChildIntoContext(bookKeeping, child, childKey) {
         // Keep both the (mapped) and old keys if they differ, just as
         // traverseAllChildren used to do for objects as children
         keyPrefix +
-          (mappedChild.key && (!child || child.key !== mappedChild.key)
-            ? escapeUserProvidedKey(mappedChild.key) + '/'
-            : '') +
-          childKey,
-      );
+          (mappedChild.key && (!child || child.key !== mappedChild.key) ? escapeUserProvidedKey(mappedChild.key) + '/' : '') + childKey,);
     }
     result.push(mappedChild);
   }
@@ -244,12 +201,7 @@ function mapIntoWithKeyPrefixInternal(children, array, prefix, func, context) {
   if (prefix != null) {
     escapedPrefix = escapeUserProvidedKey(prefix) + '/';
   }
-  var traverseContext = getPooledTraverseContext(
-    array,
-    escapedPrefix,
-    func,
-    context,
-  );
+  var traverseContext = getPooledTraverseContext(array, escapedPrefix, func, context,);
   traverseAllChildren(children, mapSingleChildIntoContext, traverseContext);
   releaseTraverseContext(traverseContext);
 }
@@ -282,12 +234,7 @@ function countChildren(children, context) {
  */
 function toArray(children) {
   var result = [];
-  mapIntoWithKeyPrefixInternal(
-    children,
-    result,
-    null,
-    emptyFunction.thatReturnsArgument,
-  );
+  mapIntoWithKeyPrefixInternal(children, result, null, emptyFunction.thatReturnsArgument,);
   return result;
 }
 
