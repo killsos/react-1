@@ -14,9 +14,6 @@ var SUBSEPARATOR = ':';
 
 /**
  * Escape and wrap key so it is safe to use as a reactid
- *
- * @param {string} key to be escaped.
- * @return {string} the escaped key.
  */
 function escape(key: string): string {
   var escapeRegex = /[=:]/g;
