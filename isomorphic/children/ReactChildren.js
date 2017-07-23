@@ -1,9 +1,6 @@
 var ReactElement = require('ReactElement');
 var emptyFunction = require('fbjs/lib/emptyFunction');
 
-
-
-
 var ITERATOR_SYMBOL = typeof Symbol === 'function' && Symbol.iterator;
 var FAUX_ITERATOR_SYMBOL = '@@iterator'; // Before Symbol spec.
 // The Symbol used to tag the ReactElement type. If there is no native Symbol
@@ -33,12 +30,6 @@ function escape(key: string): string {
 
   return '$' + escapedString;
 }
-
-/**
- * TODO: Test that a single child and an array with one item have the same key
- * pattern.
- */
-
 var didWarnAboutMaps = false;
 
 var userProvidedKeyEscapeRegex = /\/+/g;
@@ -84,14 +75,6 @@ function releaseTraverseContext(traverseContext) {
   }
 }
 
-/**
- * @param {?*} children Children tree container.
- * @param {!string} nameSoFar Name of the key path so far.
- * @param {!function} callback Callback to invoke with each child found.
- * @param {?*} traverseContext Used to pass information throughout the traversal
- * process.
- * @return {!number} The number of children in this subtree.
- */
 function traverseAllChildrenImpl(
   children,
   nameSoFar,
@@ -144,20 +127,6 @@ function traverseAllChildrenImpl(
       (ITERATOR_SYMBOL && children[ITERATOR_SYMBOL]) ||
       children[FAUX_ITERATOR_SYMBOL];
     if (typeof iteratorFn === 'function') {
-      if (__DEV__) {
-        // Warn about using Maps as children
-        if (iteratorFn === children.entries) {
-          warning(
-            didWarnAboutMaps,
-            'Using Maps as children is unsupported and will likely yield ' +
-              'unexpected results. Convert it to a sequence/iterable of keyed ' +
-              'ReactElements instead.%s',
-            getStackAddendum(),
-          );
-          didWarnAboutMaps = true;
-        }
-      }
-
       var iterator = iteratorFn.call(children);
       var step;
       var ii = 0;
@@ -173,21 +142,7 @@ function traverseAllChildrenImpl(
       }
     } else if (type === 'object') {
       var addendum = '';
-      if (__DEV__) {
-        addendum =
-          ' If you meant to render a collection of children, use an array ' +
-          'instead.' +
-          getStackAddendum();
-      }
       var childrenString = '' + children;
-      invariant(
-        false,
-        'Objects are not valid as a React child (found: %s).%s',
-        childrenString === '[object Object]'
-          ? 'object with keys {' + Object.keys(children).join(', ') + '}'
-          : childrenString,
-        addendum,
-      );
     }
   }
 
@@ -204,11 +159,6 @@ function traverseAllChildrenImpl(
  * The `traverseContext` is an optional argument that is passed through the
  * entire traversal. It can be used to store accumulations or anything else that
  * the callback might find relevant.
- *
- * @param {?*} children Children tree object.
- * @param {!function} callback To invoke upon traversing each child.
- * @param {?*} traverseContext Context for traversal.
- * @return {!number} The number of children in this subtree.
  */
 function traverseAllChildren(children, callback, traverseContext) {
   if (children == null) {
@@ -220,10 +170,6 @@ function traverseAllChildren(children, callback, traverseContext) {
 
 /**
  * Generate a key string that identifies a component within a set.
- *
- * @param {*} component A component that could contain a manual key.
- * @param {number} index Index that is used if a manual key is not provided.
- * @return {string}
  */
 function getComponentKey(component, index) {
   // Do some typechecking here since we call this blindly. We want to ensure
@@ -248,14 +194,8 @@ function forEachSingleChild(bookKeeping, child, name) {
 /**
  * Iterates through children that are typically specified as `props.children`.
  *
- * See https://facebook.github.io/react/docs/react-api.html#react.children.foreach
- *
  * The provided forEachFunc(child, index) will be called for each
  * leaf child.
- *
- * @param {?*} children Children tree container.
- * @param {function(*, int)} forEachFunc
- * @param {*} forEachContext Context for forEachContext.
  */
 function forEachChildren(children, forEachFunc, forEachContext) {
   if (children == null) {
@@ -316,16 +256,8 @@ function mapIntoWithKeyPrefixInternal(children, array, prefix, func, context) {
 
 /**
  * Maps children that are typically specified as `props.children`.
- *
- * See https://facebook.github.io/react/docs/react-api.html#react.children.map
- *
  * The provided mapFunction(child, key, index) will be called for each
  * leaf child.
- *
- * @param {?*} children Children tree container.
- * @param {function(*, int)} func The map function.
- * @param {*} context Context for mapFunction.
- * @return {object} Object containing the ordered map of results.
  */
 function mapChildren(children, func, context) {
   if (children == null) {
@@ -339,11 +271,6 @@ function mapChildren(children, func, context) {
 /**
  * Count the number of children that are typically specified as
  * `props.children`.
- *
- * See https://facebook.github.io/react/docs/react-api.html#react.children.count
- *
- * @param {?*} children Children tree container.
- * @return {number} The number of children.
  */
 function countChildren(children, context) {
   return traverseAllChildren(children, emptyFunction.thatReturnsNull, null);
@@ -352,8 +279,6 @@ function countChildren(children, context) {
 /**
  * Flatten a children object (typically specified as `props.children`) and
  * return an array with appropriately re-keyed children.
- *
- * See https://facebook.github.io/react/docs/react-api.html#react.children.toarray
  */
 function toArray(children) {
   var result = [];

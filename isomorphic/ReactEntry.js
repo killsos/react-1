@@ -22,12 +22,6 @@ var createElement = ReactElement.createElement;
 var createFactory = ReactElement.createFactory;
 var cloneElement = ReactElement.cloneElement;
 
-if (__DEV__) {
-  var ReactElementValidator = require('ReactElementValidator');
-  createElement = ReactElementValidator.createElement;
-  createFactory = ReactElementValidator.createFactory;
-  cloneElement = ReactElementValidator.cloneElement;
-}
 
 var React = {
   Children: {
@@ -55,12 +49,5 @@ var React = {
   },
 };
 
-if (__DEV__) {
-  Object.assign(React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED, {
-    // These should not be included in production.
-    ReactComponentTreeHook: require('ReactComponentTreeHook'),
-    ReactDebugCurrentFrame: require('ReactDebugCurrentFrame'),
-  });
-}
 
 module.exports = React;
