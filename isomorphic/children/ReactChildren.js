@@ -2,12 +2,14 @@ var ReactElement = require('ReactElement');
 var emptyFunction = require('fbjs/lib/emptyFunction');
 
 var ITERATOR_SYMBOL = typeof Symbol === 'function' && Symbol.iterator;
+
 var FAUX_ITERATOR_SYMBOL = '@@iterator'; // Before Symbol spec.
 // The Symbol used to tag the ReactElement type. If there is no native Symbol
 // nor polyfill, then a plain number is used for performance.
 var REACT_ELEMENT_TYPE =
   (typeof Symbol === 'function' && Symbol.for && Symbol.for('react.element')) ||
   0xeac7;
+
 
 var SEPARATOR = '.';
 var SUBSEPARATOR = ':';
@@ -27,6 +29,7 @@ function escape(key: string): string {
 
   return '$' + escapedString;
 }
+
 var didWarnAboutMaps = false;
 
 var userProvidedKeyEscapeRegex = /\/+/g;
@@ -71,21 +74,22 @@ function traverseAllChildrenImpl(children, nameSoFar, callback, traverseContext,
   var type = typeof children;
 
   if (type === 'undefined' || type === 'boolean') {
-    // All of the above are perceived as null.
     children = null;
   }
-    // The following is inlined from ReactElement. This means we can optimize
-    // some checks. React Fiber also inlines this logic for similar purposes.
+
+  // The following is inlined from ReactElement. This means we can optimize some checks. React Fiber also inlines this logic for similar purposes.
+  // 对于一个孩子的host组件 string  number是native 
   if (children === null || type === 'string' || type === 'number' || (type === 'object' && children.$$typeof === REACT_ELEMENT_TYPE)) {
-    // If it's the only child, treat the name as if it was wrapped in an array
-    // so that it's consistent if the number of children grows.
+    // If it's the only child, treat the name as if it was wrapped in an array so that it's consistent if the number of children grows.
     callback(traverseContext, children, nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar,);
     return 1;
   }
 
+  // 孩子是多个
   var child;
   var nextName;
-  var subtreeCount = 0; // Count of children found in the current subtree.
+  var subtreeCount = 0; 
+  // Count of children found in the current subtree
   var nextNamePrefix = nameSoFar === '' ? SEPARATOR : nameSoFar + SUBSEPARATOR;
 
   if (Array.isArray(children)) {
@@ -95,9 +99,8 @@ function traverseAllChildrenImpl(children, nameSoFar, callback, traverseContext,
       subtreeCount += traverseAllChildrenImpl(child, nextName, callback, traverseContext,);
     }
   } else {
-    var iteratorFn =
-      (ITERATOR_SYMBOL && children[ITERATOR_SYMBOL]) ||
-      children[FAUX_ITERATOR_SYMBOL];
+    var iteratorFn = ITERATOR_SYMBOL && children[ITERATOR_SYMBOL] || children[FAUX_ITERATOR_SYMBOL];
+
     if (typeof iteratorFn === 'function') {
       var iterator = iteratorFn.call(children);
       var step;
@@ -107,9 +110,11 @@ function traverseAllChildrenImpl(children, nameSoFar, callback, traverseContext,
         nextName = nextNamePrefix + getComponentKey(child, ii++);
         subtreeCount += traverseAllChildrenImpl(child, nextName, callback, traverseContext,);
       }
-    } else if (type === 'object') {
-      var addendum = '';
-      var childrenString = '' + children;
+    } else {
+      if (type === 'object') {
+        var addendum = '';
+        var childrenString = '' + children;
+      }
     }
   }
 
